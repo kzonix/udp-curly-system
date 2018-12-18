@@ -19,13 +19,17 @@ if __name__ == "__main__":
     try:
         default_logger.info("Starting...")
         server.start()
+        # There should not be code after server start.
+        # It can invoke 'loop.close' as a finally block of wrapped handler.
+        # TODO: add mechanism of run/stop server hooks.
     except KeyboardInterrupt as err:
+        server.stop()  # close underlying event loop in case of manual stop of the run process.
         default_logger.error("Server is stopping due to %r exception ", err)
-        server.stop()
     except (IOError, BlockingIOError, StopAsyncIteration) as err:
+        server.stop()  # close underlying event loop in case of occasion blocking operation error.
         default_logger.exception("Unexpected exception: %r", err)
     except Exception as err:
+        server.stop()  # close underlying event loop in case of occasion blocking operation error.
         default_logger.exception("Oops... %r", err)
     finally:
-        server.stop()
-        sys.exit(0)
+        sys.exit(0)  # stop system process

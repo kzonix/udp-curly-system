@@ -25,7 +25,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
 
 class UdpSockServer(RoutableServer, ServerLogging):
     """
-
+    Base implementation of DatagramSocket server.
     """
     hostname = str
     port = int
@@ -33,20 +33,38 @@ class UdpSockServer(RoutableServer, ServerLogging):
     server_sock = sock
 
     def __init__(self, hostname: str = "localhost", port: int = 3553):
+        """
+        Basic constructor for instantiating UdpSocketSever.
+
+        :type hostname str
+        :type port int
+        :param hostname: The binding of hostname of server.
+        :param port: The binding of server port.
+        """
         RoutableServer.__init__(self)
         self.hostname = hostname
         self.port = port
         self.__init_socket()
 
     def start(self):
+        """
+        Starts the instance of UdpSocketServer with underlying DatagramSocket which run over asyncio loop.
+
+        :return:
+        """
         self.logger.info("Listening on %s:%d", self.hostname, self.port)
         try:
+            # TODO: add implementation of implementation of pre-start handler
+            # Uses 'run_until_complete' method to run Future which is returned by 'UdpServerSocket.__start'.
             loop.run_until_complete(self.__start())
+
         finally:
-            loop.close()
+            # Finish of  Stop the asyncio event-loop.
+            loop.close()  # TODO: need to test (emulate this finally block invocation.
 
     def stop(self):
-        self.event_loop.close()
+        # TODO: add possibility of invocation of stop-hook (after event loop close)
+        self.event_loop.close()  # This method should not throw exception in case of event_loop is already closed.
 
     def __init_socket(self):
         """
@@ -57,7 +75,6 @@ class UdpSockServer(RoutableServer, ServerLogging):
         self.server_sock.setblocking(False)
         self.server_sock.bind((self.hostname, self.port))
         self.logger.info("Initializing server instance - %r", self.server_sock)
-
 
     async def __start(self) -> None:
         """
