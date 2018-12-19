@@ -3,6 +3,9 @@ import socket
 import asyncio
 import uvloop
 
+from server.router import RoutableServer
+from server.server_logger import ServerLogging
+
 """
 The asyncio module, introduced by PEP 3156, is a collection of network transports, protocols, 
 and streams abstractions, with a pluggable event loop.
@@ -20,23 +23,23 @@ loop = asyncio.get_event_loop()
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
 
 
-class UdpSockServer(object):
+class UdpSockServer(RoutableServer, ServerLogging):
     """
 
     """
-    logger = None
     hostname = str
     port = int
     event_loop = loop
     server_sock = sock
 
     def __init__(self, hostname: str = "localhost", port: int = 3553):
+        RoutableServer.__init__(self)
         self.hostname = hostname
         self.port = port
-        self.logger = self.__get_default_logger()
         self.__init_socket()
 
     def start(self):
+        self.logger.info("Listening on %s:%d", self.hostname, self.port)
         try:
             loop.run_until_complete(self.__start())
         finally:
@@ -50,10 +53,11 @@ class UdpSockServer(object):
 
         :return:
         """
-        self.logger.debug("Listening on %s:%d", self.hostname, self.port)
         self.server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_sock.setblocking(False)
         self.server_sock.bind((self.hostname, self.port))
+        self.logger.info("Initializing server instance - %r", self.server_sock)
+
 
     async def __start(self) -> None:
         """
@@ -95,11 +99,3 @@ class UdpSockServer(object):
         else:
             future.set_result(n)
         return future
-
-    def __get_default_logger(self):
-        """
-
-        :return:
-        """
-        logging.basicConfig(level=logging.DEBUG)
-        return logging.getLogger("UDP-SERVER :::%d" % self.port)

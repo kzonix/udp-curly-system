@@ -19,3 +19,6 @@ class RoutableServer:
 
     def __init__(self):
         pass
+
+    def handler(self):
+        pass
