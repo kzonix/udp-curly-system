@@ -81,26 +81,7 @@ class UdpSockServer(object):
             future.set_result((data, addr))
         return future
 
-    async def __sendto(self, data, addr, future=None, registered=False):
-        if not data:
-            return
-
-        def send_fn():
-            return self.server_sock.sendto(data, addr)
-
-        return await self.__send(send_fn, future, registered)
-
-    async def __sendall(self, data, future=None, registered=False):
-
-        if not data:
-            return
-
-        def send_fn():
-            return self.server_sock.sendall(data)
-
-        return await self.__send(send_fn, future, registered)
-
-    def __send(self, send_fn, future=None, registered=False):
+    def __sendto(self, data, addr, future=None, registered=False):
         fd = self.server_sock.fileno()
         if future is None:
             future = self.event_loop.create_future()
@@ -108,9 +89,9 @@ class UdpSockServer(object):
             self.event_loop.remove_writer(fd)
 
         try:
-            n = send_fn()
+            n = self.server_sock.sendto(data, addr)
         except (IOError, BlockingIOError, InterruptedError):
-            self.event_loop.add_writer(fd, self.__send, send_fn, future, True)
+            self.event_loop.add_writer(fd, self.__sendto, data, addr, future, True)
         else:
             future.set_result(n)
         return future
