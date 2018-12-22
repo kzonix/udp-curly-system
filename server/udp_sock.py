@@ -20,7 +20,7 @@ loop = asyncio.get_event_loop()
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
 
 
-class UdpServer(object):
+class UdpSockServer(object):
     """
 
     """
@@ -55,7 +55,7 @@ class UdpServer(object):
         self.server_sock.setblocking(False)
         self.server_sock.bind((self.hostname, self.port))
 
-    async def __start(self):
+    async def __start(self) -> None:
         """
 
         :return:
@@ -63,6 +63,7 @@ class UdpServer(object):
         while True:
             data, addr = await self.__recvfrom(n_bytes=1024)
             self.logger.info("Message %r from %r ", data, addr)
+            # TODO: add handler based on Protocol and data content
             await self.__sendto(data, addr)
 
     def __recvfrom(self, n_bytes, future=None, registered=False):
@@ -74,25 +75,42 @@ class UdpServer(object):
 
         try:
             data, addr = self.server_sock.recvfrom(n_bytes)
-        except (BlockingIOError, InterruptedError):
+        except (IOError, BlockingIOError, InterruptedError):
             self.event_loop.add_reader(fd, self.__recvfrom, n_bytes, future, True)
         else:
             future.set_result((data, addr))
         return future
 
-    def __sendto(self, data, addr, future=None, registered=False):
+    async def __sendto(self, data, addr, future=None, registered=False):
+        if not data:
+            return
+
+        def send_fn():
+            return self.server_sock.sendto(data, addr)
+
+        return await self.__send(send_fn, future, registered)
+
+    async def __sendall(self, data, future=None, registered=False):
+
+        if not data:
+            return
+
+        def send_fn():
+            return self.server_sock.sendall(data)
+
+        return await self.__send(send_fn, future, registered)
+
+    def __send(self, send_fn, future=None, registered=False):
         fd = self.server_sock.fileno()
         if future is None:
             future = self.event_loop.create_future()
         if registered:
             self.event_loop.remove_writer(fd)
-        if not data:
-            return
 
         try:
-            n = self.server_sock.sendto(data, addr)
-        except (BlockingIOError, InterruptedError):
-            self.event_loop.add_writer(fd, self.__sendto, data, addr, future, True)
+            n = send_fn()
+        except (IOError, BlockingIOError, InterruptedError):
+            self.event_loop.add_writer(fd, self.__send, send_fn, future, True)
         else:
             future.set_result(n)
         return future

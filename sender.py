@@ -12,4 +12,3 @@ while True:
     print('waiting to receive')
     data, server = sock.recvfrom(4096)
     print('received "%s"' % data)
-
