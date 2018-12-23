@@ -1,11 +1,19 @@
 import logging
 import socket
 import asyncio
+import uvloop
 
 """
-
+The asyncio module, introduced by PEP 3156, is a collection of network transports, protocols, 
+and streams abstractions, with a pluggable event loop.
+uvloop is a drop-in replacement of the built-in asyncio event loop.
+uvloop makes asyncio fast. In fact, it is at least 2x faster than nodejs, gevent, 
+as well as any other Python asynchronous framework. The performance of uvloop-based asyncio 
+is close to that of Go programs.
 """
+asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 loop = asyncio.get_event_loop()
+
 """
 
 """
