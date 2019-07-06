@@ -47,4 +47,4 @@ class ServerConfig(metaclass=Singleton):
             self.host = host
             self.port = port
         except KeyError as err:
-            default_logger.error("Can`t configure server from environ-configuration. %r", err)
+            default_logger.error("Can`t configure server from environment-configuration. %r", err)

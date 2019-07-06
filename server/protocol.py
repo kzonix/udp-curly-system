@@ -1,10 +1,22 @@
 from enum import IntEnum
 
 
-class Protocol(IntEnum):
+class ServerProtocol:
     pass
 
 
-class BaseProtocol(IntEnum, Protocol):
-    msg_pack = 1
-    plain = 2
+class MsgPack(ServerProtocol):
+    pass
+
+
+class BaseProtocol(ServerProtocol):
+    pass
+
+
+class Serializer:
+    pass
+
+
+class Multiplexer:
+    pass
+
