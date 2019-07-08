@@ -1,5 +1,5 @@
  msgpack>=0.6.1
  uvloop==0.12.2
- pydantic==0.29
+ pydantic==0.30
  python-env==1.0.0
  env==0.1.0
