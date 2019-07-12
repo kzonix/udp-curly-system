@@ -13,7 +13,13 @@ def exception_handler(exctype, value, traceback):
 sys.excepthook = exception_handler
 
 if __name__ == "__main__":
-
+    """
+    TODO: This will run the following commands:
+     - init configuration sources (read configuration files: conf, yaml; read environment variables, read cli startup args)
+     - init prestart hooks
+     - server start
+     - init shutdown hooks
+    """
     server = UdpServer()
 
     try:
